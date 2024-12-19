@@ -623,9 +623,9 @@ class _ConfigNetworkBase(ConfigNetwork):
     NETWORK = S.NETWORK_BASE
     NETWORK_ID = "8453"
     NETWORK_NAME = "coinbase_base"
-    DEFAULT_PROVIDER = S.PROVIDER_ALCHEMY
-    RPC_ENDPOINT = "https://base-mainnet.g.alchemy.com/v2/"
-    WEB3_ALCHEMY_PROJECT_ID = os.environ.get("WEB3_ALCHEMY_BASE")
+    DEFAULT_PROVIDER = S.PROVIDER_BLAST
+    RPC_ENDPOINT = "https://base-mainnet.blastapi.io/"
+    WEB3_ALCHEMY_PROJECT_ID = os.environ.get("WEB3_BLAST_BASE")
 
     GAS_ORACLE_ADDRESS = "0x420000000000000000000000000000000000000F"  # source: https://docs.optimism.io/builders/tools/build/oracles#gas-oracle
     network_df = get_multichain_addresses(network="coinbase_base")

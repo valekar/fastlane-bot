@@ -42,6 +42,7 @@ LOGLEVEL_BANCOR_V2 = "bancor_v2"
 PROVIDER_DEFAULT = "default"  # the default provider for network
 PROVIDER_INFURA = "infura"
 PROVIDER_ALCHEMY = "alchemy"
+PROVIDER_BLAST = "blast"
 PROVIDER_TENDERLY = "tenderly"
 PROVIDER_UNITTEST = "unittest"
 

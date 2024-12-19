@@ -29,7 +29,6 @@ from ..data.abi import (
 )
 
 ETH_PRIVATE_KEY_BE_CAREFUL = os.environ.get("ETH_PRIVATE_KEY_BE_CAREFUL")
-# WEB3_ALCHEMY_PROJECT_ID = os.environ.get("WEB3_ALCHEMY_PROJECT_ID")
 
 
 class ConfigProvider(ConfigBase):
@@ -45,10 +44,10 @@ class ConfigProvider(ConfigBase):
     PROVIDER_DEFAULT = S.PROVIDER_DEFAULT
     PROVIDER_INFURA = S.PROVIDER_INFURA
     PROVIDER_ALCHEMY = S.PROVIDER_ALCHEMY
+    PROVIDER_BLAST = S.PROVIDER_BLAST
     PROVIDER_TENDERLY = S.PROVIDER_TENDERLY
     PROVIDER_UNITTEST = S.PROVIDER_UNITTEST
     ETH_PRIVATE_KEY_BE_CAREFUL = ETH_PRIVATE_KEY_BE_CAREFUL
-    # WEB3_ALCHEMY_PROJECT_ID = WEB3_ALCHEMY_PROJECT_ID
 
     @classmethod
     def new(cls, network: ConfigNetwork, provider=None, **kwargs):
@@ -68,6 +67,8 @@ class ConfigProvider(ConfigBase):
             return _ConfigProviderAlchemy(network, _direct=False, **kwargs)
         elif provider == S.PROVIDER_TENDERLY:
             return _ConfigProviderTenderly(network, _direct=False, **kwargs)
+        elif provider == S.PROVIDER_BLAST:
+            return _ConfigProviderBlast(network, _direct=False, **kwargs)
         elif provider == S.PROVIDER_INFURA:
             return _ConfigProviderInfura(network, _direct=False, **kwargs)
         elif provider == S.PROVIDER_UNITTEST:
@@ -86,7 +87,6 @@ class _ConfigProviderAlchemy(ConfigProvider):
     """
 
     PROVIDER = S.PROVIDER_ALCHEMY
-    # WEB3_ALCHEMY_PROJECT_ID = WEB3_ALCHEMY_PROJECT_ID
 
     def __init__(self, network: ConfigNetwork, **kwargs):
         super().__init__(network, **kwargs)
@@ -185,3 +185,39 @@ class _ConfigProviderUnitTest(ConfigProvider):
         self.connection = None
         self.w3 = None
         self.BANCOR_ARBITRAGE_CONTRACT = None
+
+
+class _ConfigProviderBlast(ConfigProvider):
+    """
+    Fastlane bot config -- provider [Blast]
+    """
+
+    PROVIDER = S.PROVIDER_BLAST
+
+    def __init__(self, network: ConfigNetwork, **kwargs):
+        super().__init__(network, **kwargs)
+        self.WEB3_ALCHEMY_PROJECT_ID = network.WEB3_ALCHEMY_PROJECT_ID
+        self.RPC_URL = f"{network.RPC_ENDPOINT}{self.WEB3_ALCHEMY_PROJECT_ID}"
+        N = self.network
+        self.connection = EthereumNetwork(
+            network_id=N.NETWORK_ID,
+            network_name=N.NETWORK_NAME,
+            provider_url=self.RPC_URL,
+            provider_name="blast",
+        )
+        self.connection.connect_network(network.IS_INJECT_POA_MIDDLEWARE)
+        self.w3 = self.connection.web3
+        self.w3_async = self.connection.w3_async
+
+        self.BANCOR_ARBITRAGE_CONTRACT = self.w3.eth.contract(
+            address=self.w3.to_checksum_address(N.FASTLANE_CONTRACT_ADDRESS),
+            abi=FAST_LANE_CONTRACT_ABI,
+        )
+
+        if N.GAS_ORACLE_ADDRESS:
+            self.GAS_ORACLE_CONTRACT = self.w3.eth.contract(
+                address=N.GAS_ORACLE_ADDRESS,
+                abi=GAS_ORACLE_ABI,
+            )
+
+        self.ARB_REWARDS_PPM = self.BANCOR_ARBITRAGE_CONTRACT.caller.rewards()[0]
